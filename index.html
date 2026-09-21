@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-theme="bright">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Outcome Logo Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="bar">
+      <div class="brand"><span class="mark" aria-hidden="true"></span><h1>outcome<span class="dim">/logo builder</span></h1></div>
+      <nav class="tabs" id="tabs" aria-label="Variants"></nav>
+      <div class="modes" id="modes" role="group" aria-label="Colour mode"></div>
+      <div class="actions">
+        <div class="menu">
+          <button class="btn" id="btn-export" type="button" aria-haspopup="true" aria-expanded="false">↓ Export</button>
+          <div class="menu-list" id="export-menu" hidden>
+            <button type="button" data-export="svg">SVG · transparent</button>
+            <button type="button" data-export="svg-bg">SVG · with background</button>
+            <button type="button" data-export="png">PNG · 2048 px</button>
+            <button type="button" data-export="copy">Copy SVG</button>
+          </div>
+        </div>
+        <button class="btn btn-solid" id="btn-save" type="button" title="Duplicate this design into a new tab (Cmd/Ctrl+S)">● Save variant</button>
+      </div>
+    </header>
+
+    <section class="preview" id="preview" aria-label="Logo preview">
+      <div class="stage" id="stage">
+        <canvas id="logo" role="img" aria-label="Generated logo"></canvas>
+      </div>
+      <div class="hud hud-tl" id="hud-name"></div>
+      <div class="hud hud-tr" id="hud-view"></div>
+      <div class="hud hud-bl">
+        Drag to rotate · Shift-drag to tilt · Pinch to zoom<br>
+        <kbd>R</kbd> reshuffle within your settings · <kbd>Shift</kbd><kbd>R</kbd> randomise the whole design
+      </div>
+      <div class="history" id="history" role="group" aria-label="History">
+        <button type="button" class="hbtn" id="undo" aria-label="Undo" title="Undo (Cmd/Ctrl+Z)" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 3 6.5l3 3M3.5 6.5h5.75a3.75 3.75 0 0 1 0 7.5H6.5"/></svg>
+        </button>
+        <button type="button" class="hbtn" id="redo" aria-label="Redo" title="Redo (Shift+Cmd/Ctrl+Z)" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3.5 3 3-3 3M12.5 6.5H6.75a3.75 3.75 0 0 0 0 7.5H9.5"/></svg>
+        </button>
+      </div>
+      <div class="zoom" id="zoom" role="group" aria-label="Zoom">
+        <button type="button" class="zbtn" id="zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
+        <div class="ztrack"><input type="range" id="zoom-range" min="0" max="1" step="0.001" aria-label="Zoom"></div>
+        <button type="button" class="zbtn" id="zoom-out" aria-label="Zoom out" title="Zoom out (-)">−</button>
+        <output class="zval" id="zoom-val">100%</output>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>outcome logo builder® v0.1<br>autosaves in this browser</span>
+      <span>Double-click any value to type it, or a tab to rename it.</span>
+      <span>Export SVG for editable vectors in Figma or Illustrator. The outer circle is always a true circle.</span>
+    </footer>
+
+    <aside class="panel" id="panel" aria-label="Controls"></aside>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

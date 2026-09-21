@@ -1,0 +1,11 @@
+{
+  "name": "outcome-logo-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Web tool that generates Outcome-style pebble-in-circle logos.",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "concepts": "node scripts/concepts.mjs"
+  }
+}

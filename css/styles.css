@@ -1,0 +1,202 @@
+/* Outcome Logo Generator. Layout follows pixelcrash: header bar, big preview left, stacked control cards right.
+   Everything visual comes from the tokens below. Colours are written into these variables by js/themes.js
+   (greyscale until the brand palette is chosen), so the whole tool can be re-skinned from one place. */
+
+:root {
+  /* colour (overwritten per theme) */
+  --bg: #ffffff; --panel: #efefef; --text: #050505; --muted: #8f8f8f; --line: #dcdcdc;
+  --btn: #dcdcdc; --btnText: #050505; --accent: #050505; --accentText: #ffffff; --canvas: #f7f7f7;
+  --stage: #f7f7f7; --hud: rgba(0, 0, 0, 0.45);
+
+  /* type: Geist for the interface, mono only for tiny grey contextual text (values, hints, footer) */
+  --sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* radius scale: every visible box uses one of these (multiples of 4 / 8) */
+  --r1: 4px;   /* swatches, icons, inputs, thumbnails */
+  --r2: 8px;   /* tabs, chips, zoom buttons, menu items */
+  --r3: 12px;  /* buttons, menus */
+  --r4: 16px;  /* cards, zoom control */
+  --r5: 24px;  /* preview window */
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overscroll-behavior: none; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 500 13px/20px var(--sans); letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s;
+}
+button { font: inherit; color: inherit; letter-spacing: inherit; }
+:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
+
+.app {
+  display: grid; height: 100vh; padding: 0 24px; column-gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: 64px minmax(0, 1fr) 72px;
+}
+
+/* ---- header ---- */
+.bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 24px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 12px; flex: none; }
+.brand .mark { width: 20px; height: 20px; background: var(--text); border-radius: 50%; transition: background 0.3s; }
+.brand h1 { font: 600 18px/1 var(--sans); letter-spacing: -0.035em; white-space: nowrap; }
+.brand .dim { color: var(--muted); }
+
+.tabs { overscroll-behavior: none; display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px; flex: none;
+  color: var(--muted); cursor: pointer; white-space: nowrap; border: 0; background: none; border-radius: var(--r2);
+  transition: color 0.2s, background 0.2s;
+}
+.tab:hover { color: var(--text); background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.tab.on { color: var(--text); background: var(--panel); }
+.tab svg { width: 24px; height: 24px; flex: none; display: block; }
+.tab .x { opacity: 0; width: 20px; height: 20px; display: grid; place-items: center; color: var(--muted); border-radius: var(--r1); }
+.tab:hover .x, .tab.on .x { opacity: 1; }
+.tab .x:hover { color: var(--text); background: var(--line); }
+.tab input { font: inherit; width: 10ch; color: var(--text); background: var(--bg); border: 0; border-radius: var(--r1); box-shadow: inset 0 0 0 1px var(--text); outline: 0; padding: 2px 6px; }
+.tab-add { width: 40px; justify-content: center; padding: 0; font-size: 18px; }
+/* "reopen closed variant": slides in beside the + only while something is waiting to be reopened */
+.tab-reopen { width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: width 0.3s var(--ease), opacity 0.25s ease, color 0.2s, background 0.2s; }
+.tab-reopen.show { width: 32px; opacity: 1; pointer-events: auto; }
+.tab-reopen svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.modes { display: flex; align-items: center; gap: 4px; color: var(--muted); flex: none; }
+.modes button { background: none; border: 0; cursor: pointer; padding: 4px; border-radius: var(--r1); color: inherit; transition: color 0.2s; }
+.modes button:hover { color: var(--text); }
+.modes button.on { color: var(--text); }
+
+.actions { display: flex; gap: 8px; flex: none; }
+.btn { height: 40px; padding: 0 20px; border: 0; cursor: pointer; border-radius: var(--r3); font: 500 13px/1 var(--sans); background: var(--btn); color: var(--btnText);
+  transition: opacity 0.2s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease; }
+/* hover: greyscale modes fade clearly; a mode with a brand colour (--glow) glows it instead */
+@media (hover: hover) {
+  .btn:hover { opacity: 0.68; }
+  :root[data-glow='on'] .btn:hover { opacity: 1; }
+}
+:root[data-glow='on'] .btn:hover, :root[data-glow='on'] .btn:focus-visible {
+  /* both buttons fill with the brand primary and flip their text; a faint under-glow instead of a halo */
+  background: var(--glow); color: var(--accent);
+  box-shadow: 0 6px 18px -4px color-mix(in srgb, var(--glow) 55%, transparent);
+}
+.btn-solid { background: var(--accent); color: var(--accentText); }
+.menu { position: relative; }
+.menu-list { position: absolute; right: 0; top: 48px; z-index: 10; min-width: 216px; padding: 8px; border-radius: var(--r3); background: var(--panel); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16); }
+.menu-list button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 12px; border-radius: var(--r2); cursor: pointer; }
+.menu-list button:hover { background: var(--line); }
+
+/* ---- preview: the logo owns the screen ---- */
+.preview { grid-column: 1; grid-row: 2; position: relative; overflow: hidden; border-radius: var(--r5); background: var(--stage); transition: background 0.45s ease; cursor: grab; touch-action: none; user-select: none; }
+.preview.drag { cursor: grabbing; }
+.stage { position: absolute; inset: 0; perspective: 1400px; }
+/* the canvas fills the window; the mark is drawn centred inside it (sized by the smaller side) */
+#logo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transition: transform 0.4s var(--ease); }
+.preview.drag #logo { transition: none; }
+.hud { position: absolute; padding: 16px 20px; font: 500 11px/16px var(--mono); color: var(--hud); pointer-events: none; transition: color 0.45s; }
+.hud kbd { font: inherit; padding: 0 4px; margin-right: 2px; border: 1px solid currentColor; border-radius: var(--r1); opacity: 0.9; }
+.hud kbd + kbd { margin-left: -1px; }
+.hud-bl { max-width: calc(100% - 112px); }
+.hud-tl { top: 0; left: 0; } .hud-tr { top: 0; right: 0; text-align: right; } .hud-bl { bottom: 0; left: 0; }
+
+/* zoom: a slim control on the right edge of the window; the logo stays centred while it scales */
+.zoom { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); z-index: 2; width: 48px; padding: 8px 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border-radius: var(--r4); background: var(--panel); cursor: default; transition: background 0.3s; }
+.zbtn { width: 32px; height: 32px; border: 0; border-radius: var(--r2); background: transparent; color: var(--text); cursor: pointer; font: 500 18px/1 var(--sans); transition: background 0.2s; }
+.zbtn:hover { background: var(--line); }
+.ztrack { position: relative; width: 32px; height: 160px; }
+.ztrack input[type='range'] { position: absolute; left: 50%; top: 50%; width: 160px; transform: translate(-50%, -50%) rotate(-90deg); }
+.zval { font: 500 11px/16px var(--mono); color: var(--muted); text-align: center; width: 100%; }
+.zoom .val-edit { width: 40px; text-align: center; font-size: 11px; }
+
+.history { position: absolute; right: 16px; bottom: 16px; z-index: 2; display: flex; gap: 4px; padding: 4px; border-radius: var(--r3); background: var(--panel); transition: background 0.3s; cursor: default; }
+.hbtn { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--r2); background: transparent; color: var(--text); cursor: pointer; transition: background 0.2s, opacity 0.2s; }
+.hbtn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.hbtn:hover:not(:disabled) { background: var(--line); }
+.hbtn:disabled { opacity: 0.3; cursor: default; }
+
+.foot { grid-column: 1; grid-row: 3; display: grid; grid-template-columns: 1.1fr 1fr 1.8fr; gap: 24px; padding-top: 16px; color: var(--muted); font: 500 10.5px/14px var(--mono); }
+
+/* ---- control panel ---- */
+.panel { grid-column: 2; grid-row: 2 / 4; overflow-y: auto; padding-bottom: 56px; scrollbar-width: none; overscroll-behavior: none; }
+/* fade the bottom edge with a sticky gradient (a mask would repaint the whole panel on every slider move) */
+.panel::after { content: ''; position: sticky; bottom: 0; display: block; height: 56px; margin-top: -56px; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--bg)); }
+.panel::-webkit-scrollbar { display: none; }
+.card { background: var(--panel); border-radius: var(--r4); padding: 20px 24px 16px; margin-bottom: 12px; transition: background 0.3s; }
+.card-h { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; -webkit-user-select: none;
+  transition: padding-bottom 0.35s var(--ease), margin-bottom 0.35s var(--ease), border-color 0.3s ease; }
+.card-h h2 { font: 600 12px/20px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.ico { position: relative; width: 16px; height: 16px; padding: 0; border: 0; border-radius: var(--r1); cursor: pointer; background: var(--accent); color: var(--accentText); flex: none; transition: background 0.3s, color 0.3s; }
+.ico::before, .ico::after { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 2px; margin: -1px 0 0 -4px; border-radius: 1px; background: currentColor; transition: transform 0.35s var(--ease); }
+.ico::after { transform: rotate(90deg) scaleX(0); }                      /* open: just a minus */
+.card.collapsed .ico::after { transform: rotate(90deg) scaleX(1); }       /* closed: the vertical bar grows in, making a plus */
+.card.collapsed .ico::before { transform: rotate(180deg); }
+.acts { margin-left: auto; color: var(--muted); display: flex; gap: 8px; font-size: 12px; cursor: default; }
+.acts button { background: none; border: 0; cursor: pointer; padding: 0 2px; border-radius: var(--r1); color: inherit; transition: color 0.2s; }
+.acts button:hover { color: var(--text); }
+.card.collapsed .card-h { border-bottom-color: transparent; margin-bottom: 0; padding-bottom: 8px; }
+
+/* collapse: grid-row 1fr -> 0fr animates the height without measuring */
+.card-b { display: grid; grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows 0.4s var(--ease), visibility 0s; }
+.card-i { min-height: 0; overflow: hidden; padding: 2px 4px; margin: -2px -4px; }   /* small gutter so focus rings are not clipped */
+.card.collapsed .card-b { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows 0.4s var(--ease) 0.06s, visibility 0s linear 0.46s; }
+
+/* content fade: on open each row settles in after the one above it (--i is set per row in js/ui.js);
+   on close the rows fade out first, then the card folds */
+.card-i > * { opacity: 1; transform: none; transition: opacity 0.32s ease calc(0.1s + var(--i, 0) * 30ms), transform 0.42s var(--ease) calc(0.1s + var(--i, 0) * 30ms); }
+.card.collapsed .card-i > * { opacity: 0; transform: translateY(6px); transition: opacity 0.16s ease, transform 0.22s var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .card-b, .card.collapsed .card-b, .card-h, .ico::before, .ico::after, .card-i > *, .card.collapsed .card-i > * { transition: none; }
+}
+
+.row { display: grid; grid-template-columns: 88px minmax(0, 1fr) 48px; align-items: center; column-gap: 12px; min-height: 36px; }
+.row > label, .row > .lab { color: var(--text); }
+.row output { text-align: right; color: var(--muted); font: 500 11.5px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.row.opts { grid-template-columns: 88px minmax(0, 1fr); }
+.row.color { grid-template-columns: 88px minmax(0, 1fr) auto; }
+.set { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px 8px; color: var(--muted); }
+.set button { background: none; border: 0; cursor: pointer; padding: 0 4px; border-radius: var(--r1); color: inherit; transition: color 0.2s; }
+.set button:hover { color: var(--text); }
+.set button.on { color: var(--text); }
+.set i { font-style: normal; color: var(--muted); }
+.set .editable { font: 500 11.5px/20px var(--mono); }
+.hex { text-align: right; text-transform: uppercase; color: var(--text); font: 500 11.5px/1 var(--mono); }
+.editable { cursor: text; user-select: none; -webkit-user-select: none; touch-action: manipulation; transition: color 0.2s; }
+.row output.editable:hover, .set .editable:hover, .zval.editable:hover { color: var(--text); }
+.val-edit { width: 100%; min-width: 0; font: inherit; letter-spacing: inherit; text-align: right; text-transform: inherit; color: var(--text); background: var(--bg);
+  border: 0; border-radius: var(--r1); box-shadow: inset 0 0 0 1px var(--text); padding: 2px 4px; outline: 0; user-select: text; -webkit-user-select: text; }
+.set .val-edit { width: 8ch; }
+.sw { position: relative; width: 20px; height: 20px; margin-left: 12px; border: 1px solid var(--line); border-radius: var(--r1); }
+.sw input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+.chip { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: var(--r2); padding: 0; cursor: pointer; position: relative; transition: transform 0.2s var(--ease); }
+.chip:hover { transform: scale(1.06); }
+.chip.on { outline: 1px solid var(--text); outline-offset: 2px; }
+.btnrow { display: flex; gap: 8px; padding: 8px 0; }
+.btnrow .btn { flex: 1; height: 36px; padding: 0 12px; }
+
+/* thin-line slider with a tick handle (pixelcrash style) */
+input[type='range'] { -webkit-appearance: none; appearance: none; width: 100%; height: 24px; background: transparent; cursor: ew-resize; margin: 0; --p: 50%; }
+input[type='range']::-webkit-slider-runnable-track { height: 1px; background: linear-gradient(to right, var(--text) var(--p), var(--line) var(--p)); }
+input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; box-sizing: content-box; width: 2px; height: 16px; margin-top: -8px; border: solid transparent; border-width: 0 8px; background: var(--text); background-clip: padding-box; }
+input[type='range']::-moz-range-track { height: 1px; background: linear-gradient(to right, var(--text) var(--p), var(--line) var(--p)); }
+input[type='range']::-moz-range-thumb { box-sizing: content-box; width: 2px; height: 16px; border: solid transparent; border-width: 0 8px; border-radius: 0; background: var(--text); background-clip: padding-box; }
+
+@media (max-width: 900px) {
+  .app { height: auto; grid-template-columns: 1fr; grid-template-rows: auto 62vh auto auto; padding: 0 16px; }
+  .bar { flex-wrap: wrap; gap: 8px 16px; padding: 12px 0; }
+  .tabs { order: 5; flex: 1 0 100%; }
+  .actions { margin-left: auto; }
+  .btn { height: 40px; padding: 0 16px; }
+  .foot { grid-template-columns: 1fr; gap: 8px; padding: 16px 0 24px; }
+  .panel { grid-column: 1; grid-row: 4; overflow: visible; padding-bottom: 32px; }
+  .panel::after { display: none; }
+  .hud-tr { top: 20px; right: auto; left: 0; text-align: left; }
+  .hud-bl { display: none; }
+}
+
+@media (min-width: 901px) {
+  html, body { overflow: hidden; }
+}
