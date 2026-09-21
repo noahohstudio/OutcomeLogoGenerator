@@ -120,9 +120,12 @@ button { font: inherit; color: inherit; letter-spacing: inherit; }
 .foot { grid-column: 1; grid-row: 3; display: grid; grid-template-columns: 1.1fr 1fr 1.8fr; gap: 24px; padding-top: 16px; color: var(--muted); font: 500 10.5px/14px var(--mono); }
 
 /* ---- control panel ---- */
-.panel { grid-column: 2; grid-row: 2 / 4; overflow-y: auto; padding-bottom: 56px; scrollbar-width: none; overscroll-behavior: none; }
-/* fade the bottom edge with a sticky gradient (a mask would repaint the whole panel on every slider move) */
-.panel::after { content: ''; position: sticky; bottom: 0; display: block; height: 56px; margin-top: -56px; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--bg)); }
+.panel { grid-column: 2; grid-row: 2 / 4; overflow-y: auto; scrollbar-width: none; overscroll-behavior: none; }
+/* fade the bottom edge with a sticky gradient (a mask would repaint the whole panel on every slider move).
+   The scroller has no padding on purpose: sticky offsets are measured inside a scroller's padding, so bottom padding
+   floats the fade above the edge and lets the content show through beneath it. The gradient itself is the 56px of
+   end-of-scroll room, so the last card can scroll clear of the fade. */
+.panel::after { content: ''; position: sticky; bottom: 0; display: block; height: 56px; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--bg)); }
 .panel::-webkit-scrollbar { display: none; }
 .card { background: var(--panel); border-radius: var(--r4); padding: 20px 24px 16px; margin-bottom: 12px; transition: background 0.3s; }
 .card-h { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; -webkit-user-select: none;
