@@ -80,16 +80,20 @@ export class LogoView {
   }
 
   setColors(colors, snap = false) {
-    const t = { fill: colors.fill, ink: hex(colors.ink), pebble: hex(colors.pebble), mix: (colors.mix || []).map(hex) };
+    // The main window shows ink and background swapped - the disc reads in what the Color card calls
+    // "Background" and the holes reveal what it calls "Ink". Purely a display choice for this one view:
+    // thumbnails (tabs.js), export (export.js) and the Color card itself all use the real, un-swapped values.
+    const dispInk = colors.bg, dispStage = colors.ink;
+    const t = { fill: colors.fill, ink: hex(dispInk), pebble: hex(colors.pebble), mix: (colors.mix || []).map(hex) };
     this.colT = t;
     if (!this.col || snap) this.col = { fill: t.fill, ink: [...t.ink], pebble: [...t.pebble], mix: t.mix.map((c) => [...c]) };
     this.col.fill = t.fill;
     if (this.col.mix.length !== t.mix.length) this.col.mix = t.mix.map((c) => [...c]);
     // the stage colour is a CSS variable (it transitions in CSS); holes are cut out, so they always match it
-    this.preview.style.setProperty('--stage', colors.bg);
+    this.preview.style.setProperty('--stage', dispStage);
     // pick whichever of black/white actually contrasts more against the stage, rather than a flat 0.5 luminance
     // split (the true black/white crossover sits around L=0.18, not 0.5 - see lum() above)
-    const bgL = lum(colors.bg);
+    const bgL = lum(dispStage);
     const readsBetterOnBlack = (bgL + 0.05) / 0.05 >= 1.05 / (bgL + 0.05);
     this.preview.style.setProperty('--hud', readsBetterOnBlack ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.5)');
     this.kick();
