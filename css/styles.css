@@ -40,7 +40,7 @@ button { font: inherit; color: inherit; letter-spacing: inherit; }
 /* ---- header ---- */
 .bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 24px; min-width: 0; }
 .brand { display: flex; align-items: center; gap: 12px; flex: none; }
-.brand .mark { width: 20px; height: 20px; background: var(--text); border-radius: 50%; transition: background 0.3s; }
+.brand .mark { width: 20px; height: 20px; display: block; flex: none; color: var(--text); transition: color 0.3s; }
 .brand h1 { font: 600 18px/1 var(--sans); letter-spacing: -0.035em; white-space: nowrap; }
 .brand .dim { color: var(--muted); }
 

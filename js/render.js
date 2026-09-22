@@ -12,7 +12,13 @@ const NMAX = 24, RATE = 13, TAU = Math.PI * 2, MAX_DPR = 2;
 
 const hex = (h) => { const n = parseInt(h.slice(1, 7), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const css = (c) => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
-const lum = (h) => { const c = hex(h); return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255; };
+// true WCAG relative luminance (gamma-decoded per channel) - a plain 0-255 weighted average reads a saturated
+// mid-tone like coral as ~0.49 ("light") when its real luminance is ~0.29 ("dark"), which is exactly the case
+// that decides whether HUD text over the stage should be black or white.
+const lum = (h) => hex(h).reduce((L, v, i) => {
+  v /= 255; v = v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  return L + [0.2126, 0.7152, 0.0722][i] * v;
+}, 0);
 
 // closed Catmull-Rom spline through flat [x, y, ...] points, as cubic Beziers
 function trace(ctx, f) {
@@ -81,7 +87,11 @@ export class LogoView {
     if (this.col.mix.length !== t.mix.length) this.col.mix = t.mix.map((c) => [...c]);
     // the stage colour is a CSS variable (it transitions in CSS); holes are cut out, so they always match it
     this.preview.style.setProperty('--stage', colors.bg);
-    this.preview.style.setProperty('--hud', lum(colors.bg) > 0.5 ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.5)');
+    // pick whichever of black/white actually contrasts more against the stage, rather than a flat 0.5 luminance
+    // split (the true black/white crossover sits around L=0.18, not 0.5 - see lum() above)
+    const bgL = lum(colors.bg);
+    const readsBetterOnBlack = (bgL + 0.05) / 0.05 >= 1.05 / (bgL + 0.05);
+    this.preview.style.setProperty('--hud', readsBetterOnBlack ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.5)');
     this.kick();
   }
 

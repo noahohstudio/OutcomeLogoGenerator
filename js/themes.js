@@ -1,5 +1,5 @@
-// Everything is greyscale until the brand colours are decided.
-// `company` holds PLACEHOLDER values: swap them here (and in the Figma variables) once the palette is chosen.
+// Bright/Dark stay greyscale by design. `company` holds the brand palette — forest, coral and cream
+// (chosen 2026-09-22; still "for now", so update here and in the Figma variables if it changes).
 // ui   = tool chrome tokens (mapped to CSS variables). glow = the brand primary used for the button hover glow (null = none)
 // logo = default logo colours for that theme. fill: 'hole' | 'solid' | 'mix'
 
@@ -16,8 +16,12 @@ export const THEMES = {
   },
   company: {
     label: 'Company',
-    ui: { bg: '#ecebe4', panel: '#e0ded3', text: '#0f1210', muted: '#7f7f74', line: '#cdcbbf', btn: '#d3d1c4', btnText: '#0f1210', accent: '#0f1210', accentText: '#d8ff3a', canvas: '#d8ff3a', glow: '#d8ff3a' },
-    logo: { ink: '#0f1210', bg: '#d8ff3a', pebble: '#d8ff3a', fill: 'hole', mix: ['#ecebe4', '#2f6b57', '#ff7a59', '#0f1210'] },
+    // Forest is the dark ink (text, accent fill, logo ink) — it plays the near-black role the greyscale
+    // themes use. Coral is the vivid brand colour (stage, glow, hover) — it plays the role lime used to.
+    // Cream is the light chrome (page/panel) and, importantly, the text on the forest accent button: cream
+    // on forest reads at ~11:1 contrast, where coral would only clear ~4:1.
+    ui: { bg: '#fff1e6', panel: '#f1e6db', text: '#0e3b2c', muted: '#7a8d80', line: '#e2dbd0', btn: '#e7dfd3', btnText: '#0e3b2c', accent: '#0e3b2c', accentText: '#fff1e6', canvas: '#ff5a4e', glow: '#ff5a4e' },
+    logo: { ink: '#0e3b2c', bg: '#ff5a4e', pebble: '#ff5a4e', fill: 'hole', mix: ['#fff1e6', '#0e3b2c', '#ff5a4e', '#7a8d80'] },
   },
 };
 
@@ -32,10 +36,12 @@ export const GREY_SWATCHES = [
   { name: 'White',    ink: '#f2f2f2', bg: '#0b0b0b' },
 ];
 
+// Forest-on-cream and coral-on-forest are the two lockups in the brand reference; Cream-on-forest is the
+// reversed neutral for a third option.
 export const COMPANY_SWATCHES = [
-  { name: 'Lime',   ink: '#0f1210', bg: '#d8ff3a' },
-  { name: 'Forest', ink: '#2f6b57', bg: '#ecebe4' },
-  { name: 'Ember',  ink: '#ff7a59', bg: '#0f1210' },
+  { name: 'Forest', ink: '#0e3b2c', bg: '#fff1e6' },
+  { name: 'Coral',  ink: '#ff5a4e', bg: '#0e3b2c' },
+  { name: 'Cream',  ink: '#fff1e6', bg: '#0e3b2c' },
 ];
 
 export const swatchesFor = (theme) => (theme === 'company' ? [...COMPANY_SWATCHES, ...GREY_SWATCHES.slice(0, 2)] : GREY_SWATCHES);
