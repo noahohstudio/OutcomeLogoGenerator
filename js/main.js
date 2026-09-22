@@ -33,7 +33,7 @@ function hud(v) {
 
 function refresh({ morph = true, tabs = false } = {}) {
   const v = active(store);
-  view.set(v.params, v.colors, !morph);
+  view.set(v.params, v.colors, store.theme, !morph);
   sync(v.params, v.colors, store.theme);
   hud(v);
   if (tabs) renderTabs($('tabs'), store, handlers);

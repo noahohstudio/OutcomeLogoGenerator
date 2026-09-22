@@ -47,8 +47,9 @@ export class LogoView {
     this.resize();
   }
 
-  // params: full variant params. snap = jump instead of morphing (used on first load).
-  set(params, colors, snap = false) {
+  // params: full variant params. theme: the active mode name (bright/dark/company) - only company swaps
+  // ink/background in this window, see setColors(). snap = jump instead of morphing (used on first load).
+  set(params, colors, theme, snap = false) {
     const first = !this.target || snap;
     const layoutChanged = first || LAYOUT.some((k) => params[k] !== this.target[k]);
     this.target = { ...params };
@@ -57,6 +58,7 @@ export class LogoView {
       this.rot = params.rotate; this.sites = []; this.tgt = [];
     }
     if (layoutChanged) this.retarget(first);
+    this.theme = theme;
     this.setColors(colors, first);
     this.canvas.style.transform = params.tiltX || params.tiltY ? `rotateX(${params.tiltX}deg) rotateY(${params.tiltY}deg)` : 'none';
     this.kick();
@@ -80,10 +82,12 @@ export class LogoView {
   }
 
   setColors(colors, snap = false) {
-    // The main window shows ink and background swapped - the disc reads in what the Color card calls
-    // "Background" and the holes reveal what it calls "Ink". Purely a display choice for this one view:
-    // thumbnails (tabs.js), export (export.js) and the Color card itself all use the real, un-swapped values.
-    const dispInk = colors.bg, dispStage = colors.ink;
+    // In Company mode only, the main window shows ink and background swapped - the disc reads in what the
+    // Color card calls "Background" and the holes reveal what it calls "Ink" (it reads better for the brand
+    // coral/forest pair). Bright and Dark are untouched. Purely a display choice for this one view either way:
+    // thumbnails (tabs.js), export (export.js) and the Color card itself always use the real, un-swapped values.
+    const swap = this.theme === 'company';
+    const dispInk = swap ? colors.bg : colors.ink, dispStage = swap ? colors.ink : colors.bg;
     const t = { fill: colors.fill, ink: hex(dispInk), pebble: hex(colors.pebble), mix: (colors.mix || []).map(hex) };
     this.colT = t;
     if (!this.col || snap) this.col = { fill: t.fill, ink: [...t.ink], pebble: [...t.pebble], mix: t.mix.map((c) => [...c]) };
